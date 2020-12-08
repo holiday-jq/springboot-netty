@@ -27,7 +27,6 @@ export default {
     created() {    
     },
     mounted() {
-        console.log("expression")
     },
     methods: {
         selectExpression: function(title, name) {

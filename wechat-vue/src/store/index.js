@@ -10,7 +10,7 @@ export default new Vuex.Store({
   mutations: {
      commitInfo: function(state, info) {
       state.userInfo = info;
-      localStorage.setItem("userInfo", JSON.stringify(info));
+      localStorage.setItem("userInfo"+info.userId, JSON.stringify(info));
     }
   },
   actions: {

@@ -1,14 +1,15 @@
 <template>
      <div class="login-container">
              <div class="input-container">
-                 <div class="top-information">请登录</div>
-                 <div class="input-warpper" style="margin-right: 17px;">
-                 <span>用户名：</span><input class="input-content" type="input" v-model="userName">
+                 <div class="top-information">欢迎您，请登录</div>
+                 <div class="input-warpper">
+                 <span></span><input class="input-content" placeholder="用户名" type="input" autocomplete="off" v-model="userName">
                  </div>
                  <div class="input-warpper">
-                 <span>密码：</span><input class="input-content" type="password" v-model="password">
+                 <span></span><input class="input-content" placeholder="密码" type="password" autocomplete="off" v-model="password">
                  </div>
                  <button class="commit" @click="toLogin">登录</button>
+                 <div class="foot-tip">如果忘记密码，请联系管理员重置。</div>
              </div>
      </div>
 </template>
@@ -44,7 +45,11 @@ export default {
                 console.log(res);
                 if (res.data.obj) {
                    me.saveUserInfo(res.data.obj);
-                   me.$router.push('/wechat')
+                   let params = {
+                       userId: res.data.obj.userId
+                   }
+                   let encodeUrl = window.encodeURI(JSON.stringify(params));
+                   me.$router.push('/wechat?urlParams='+encodeUrl)
                 } else {
                     alert("登录失败，密码错误！")
                 }

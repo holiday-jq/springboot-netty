@@ -95,6 +95,11 @@ import expression from "@/views/expression.vue"
 import * as request from "@/utils/request"
 import * as constant from '@/constant/expressionData';
 import { mapState } from 'vuex'
+import Vue from 'vue';
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+
+Vue.use(ElementUI);
 export default {
   name: "wechat",
   components: {
@@ -129,8 +134,8 @@ export default {
     };
   },
   created() {
-    let cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"));
-    this.cacheUserInfo = cacheUserInfo;
+    let urlCacheParams = JSON.parse(this.urlParams);
+    this.cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"+urlCacheParams.userId));
   },
   mounted() {
     let self = this;
@@ -150,7 +155,10 @@ export default {
             }
             self.socket.send(JSON.stringify(data));
         } else {
-            alert("Websocket连接没有开启！");
+            self.$message({
+              message: 'Websocket连接没有开启！',
+              type: 'warning'
+            });
         }  
     }, 1000 * 25)
   },
@@ -158,6 +166,10 @@ export default {
     ...mapState({
       userInfo: "userInfo",
     }),
+    // 页面传参
+    urlParams: function () {
+      return this.$route.query.urlParams;
+    },
   },
   methods: {
     renderMessage: function(message) {
@@ -208,7 +220,7 @@ export default {
     },
     fileSelected: function() {
         let self = this;
-        let cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+        let cacheUserInfo = self.cacheUserInfo;
         let file = this.$refs.fileInt.files[0];
         let fd = new FormData();
         fd.append("file", file);
@@ -237,7 +249,10 @@ export default {
                 }
                 self.socket.send(JSON.stringify(data));
             } else {
-                alert("Websocket连接没有开启！");
+                self.$message({
+                  message: 'Websocket连接没有开启！',
+                  type: 'warning'
+                });
             }            
           }
         })
@@ -294,7 +309,10 @@ export default {
               }
               self.socket.send(JSON.stringify(data));
         } else {
-              alert("Websocket连接没有开启！");
+              self.$message({
+                message: 'Websocket连接没有开启！',
+                type: 'warning'
+              });
         }        
     },
     // 关闭群聊选择框
@@ -367,7 +385,7 @@ export default {
     //点击发送消息
     sendMessage: function() {
        let self = this;
-       let cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+       let cacheUserInfo = self.cacheUserInfo;
        let parmas = {
            message: self.message,
            type: self.Messagetype,
@@ -395,7 +413,10 @@ export default {
             }
             self.socket.send(JSON.stringify(data));
        } else {
-            alert("Websocket连接没有开启！");
+            self.$message({
+              message: 'Websocket连接没有开启！',
+              type: 'warning'
+            });
        }
      },
     chatInput: function(event) {
@@ -429,7 +450,7 @@ export default {
            self.userInfoActive = true;
         }
         // f5刷新界面后，vuex会重新更新state 所以存储的数据会丢失
-        let cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+        let cacheUserInfo = self.cacheUserInfo;
         let params = {
            userId: self.userInfo.userId || cacheUserInfo.userId
         }
@@ -468,7 +489,10 @@ export default {
                  break;              
             }
           } else {
-            alert("发送失败 对方不在线");
+              self.$message({
+                message: '发送失败 对方不在线',
+                type: 'warning'
+              });
           }
         };
         // socket连接 连接成功1秒后，将用户信息注册到服务器在线用户表
@@ -477,7 +501,7 @@ export default {
             if (!window.WebSocket) {
                 return;
             }
-            let cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+            let cacheUserInfo = self.cacheUserInfo;
             if (socket.readyState == WebSocket.OPEN) {
                 let data = {
                     type: 7,
@@ -485,7 +509,10 @@ export default {
                 }
                 socket.send(JSON.stringify(data));
             } else {
-                alert("Websocket连接没有开启！");
+                self.$message({
+                  message: 'Websocket连接没有开启！',
+                  type: 'warning'
+                });
             }
         }, 1000);
         //socket关闭
@@ -493,7 +520,10 @@ export default {
           console.log("WebSocket已关闭...");
         };
       } else {
-        alert("您的浏览器不支持WebSocket！");
+        self.$message({
+          message: '您的浏览器不支持WebSocket！',
+          type: 'warning'
+        });
       }
       this.socket = socket;
     },
