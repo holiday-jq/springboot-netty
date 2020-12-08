@@ -3,17 +3,13 @@ package com.holiday.matcloud.serve;
 import java.util.concurrent.TimeUnit;
 import com.holiday.matcloud.utils.SessionUtils;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 /**
- * 空闲连接检测   如果规定时间没有数据传输则关闭连接
+ * 空闲连接检测   如果规定时间没有数据传输则关闭连接    不能实现为单例模式  每个连接都有各自的状态
  */
-@Sharable
 public class IMIdleStateHandler extends IdleStateHandler{
-	
-	public static IMIdleStateHandler INSTANCE = new IMIdleStateHandler();
-		
+			
 	private static final int READER_IDLE_TIME = 30;
 	
 	/**
@@ -22,7 +18,7 @@ public class IMIdleStateHandler extends IdleStateHandler{
 	 * 第三个参数表示读写空闲时间
 	 * 第四个参数表示时间单位
 	 */
-	private IMIdleStateHandler() {
+	public IMIdleStateHandler() {
 	     super(READER_IDLE_TIME, 0, 0, TimeUnit.SECONDS);
 	}
 	

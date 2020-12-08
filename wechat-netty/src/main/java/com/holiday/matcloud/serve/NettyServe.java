@@ -46,8 +46,9 @@ public class NettyServe implements InitializingBean {
 
 			@Override
 			protected void initChannel(NioSocketChannel ch) throws Exception {
-				// TODO Auto-generated method stub
-				ch.pipeline().addLast(IMIdleStateHandler.INSTANCE);
+				//为什么空闲检测要插入到最前面？因为如果插入到最后面的话，如果这条连接读到了数据，但是在传播的过程中出错了或者数据处理完后不往
+				//后面传递，最终IMIdleStateHandler就不会读到数据  、导致误判。
+				ch.pipeline().addLast(new IMIdleStateHandler());
 				ch.pipeline().addLast("http-codec", new HttpServerCodec()); //http编解码
 				ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536)); //httpContent消息聚合
 				ch.pipeline().addLast("compressor", new HttpContentCompressor()); // HttpContent 压缩
