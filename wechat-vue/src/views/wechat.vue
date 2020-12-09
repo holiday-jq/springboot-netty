@@ -162,6 +162,20 @@ export default {
         }  
     }, 1000 * 25)
   },
+  watch: {
+      chatMessageList:{
+           handler(newName, oldName) {
+              this.$nextTick(() => {
+                  setTimeout(function() {
+                    let message = document.getElementById('overflowMessage');
+                    let scrollVal = message.scrollHeight;
+                    $("#overflowMessage").scrollTop(scrollVal); 
+               }, 10)
+              })
+           },
+           deep: true
+      },
+  },
   computed: {
     ...mapState({
       userInfo: "userInfo",
@@ -385,6 +399,13 @@ export default {
     //点击发送消息
     sendMessage: function() {
        let self = this;
+       if (self.message == "") {
+            self.$message({
+              message: '发送内容不能为空！',
+              type: 'warning'
+            });
+           return;
+       }
        let cacheUserInfo = self.cacheUserInfo;
        let parmas = {
            message: self.message,
@@ -395,13 +416,6 @@ export default {
        self.chatMessageList.push(parmas);
        self.messageContentMapping[self.chatCurrentObject.userId] = request.copy(self.chatMessageList);
        self.message = "";
-       this.$nextTick(() => {
-          setTimeout(function() {
-            let message = document.getElementById('overflowMessage');
-            let scrollVal = message.scrollHeight;
-            $("#overflowMessage").scrollTop(scrollVal); 
-          }, 10)
-       })
       if (self.socket.readyState == WebSocket.OPEN) {
             let data = {
                 type: self.Messagetype,
