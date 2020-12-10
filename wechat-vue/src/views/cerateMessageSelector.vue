@@ -78,8 +78,6 @@ export default {
     friendData: {
       deep: true,
       handler(newObj, oldObj) {
-        console.log(newObj)
-        console.log(oldObj)
       }
     }
   },

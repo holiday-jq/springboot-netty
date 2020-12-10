@@ -13,7 +13,8 @@
                            <div style="position: relative;top: -30px;">当前聊天列表</div>
                            <div class="chatObj-item" v-for="(item, index) in currentChatingList" :key="index" 
                            :class="{'selectActive': chatCurrentIndex==index}"
-                           @click="changeChatObject(item, index)">
+                           @click="changeChatObject(item, index)" 
+                           @contextmenu.prevent="openMenu($event,item)">
                                <div class="friend-img" :style="{'background-image': 'url('+require('../assets/'+item.image)+')'}"></div>
                                <div class="column-container">
                                  <div class="chatObj-userName">{{item.showName}}</div>
@@ -24,6 +25,14 @@
                                  </div>
                                </div>
                            </div>
+                           <!-- 鼠标右键弹出操作框 -->
+                           <ul v-show="visible" :style="{left:left+'px',top:top+'px'}" class="contextmenu">
+                              <li>置顶聊天</li>  <!-- 暂未实现 -->
+                              <li>上移</li>   <!-- 暂未实现 -->
+                              <li>下移</li>   <!-- 暂未实现 -->
+                              <li @click="deleteOnline">删除聊天</li> 
+                            </ul>
+                           <!-- 鼠标右键弹出操作框 -->
                      </div>
                      <!-- 好友列表 -->
                      <div class="my-friendlist-container" v-show="!tabActive">
@@ -131,6 +140,11 @@ export default {
       //表情弹出框显示
       expressionActive: false,
       uuid: null, //定时器Id
+      //右键弹出列表属性
+      visible: false,
+			top: 0,
+      left: 0,
+      rightHandItem: null,
     };
   },
   created() {
@@ -175,6 +189,14 @@ export default {
            },
            deep: true
       },
+    visible(value) {
+      if (value) {
+        //给页面body添加点击事件  无论点了那里都会触发
+        document.body.addEventListener('click', this.closeMenu)
+      } else {
+        document.body.removeEventListener('click', this.closeMenu)
+      }
+    }
   },
   computed: {
     ...mapState({
@@ -186,6 +208,35 @@ export default {
     },
   },
   methods: {
+    //右键选择删除聊天
+    deleteOnline: function() {
+        let self = this;
+        self.currentChatingList.some(function(item, i) {
+             if (self.rightHandItem.userId = item.userId) {
+                 self.currentChatingList.splice(i, 1);
+                 self.chatCurrentIndex--;
+                 self.$delete(self.messageContentMapping, self.rightHandItem.userId)
+                 return true;
+             }
+        })
+        if (self.rightHandItem.userId == self.chatCurrentObject.userId) {
+            self.userInfoActive = false;
+            self.inputMessageActive = false;
+            self.chatCurrentIndex = null;
+            self.chatCurrentObject = {};
+        }
+    },
+    closeMenu: function() {
+        this.visible = false;
+    },
+    // 右键弹出选择框 根据event对象拿到X Y 坐标
+    openMenu: function(e, item) {
+        this.rightHandItem = item; //右键显示哪个聊天item
+        this.top = e.pageY;
+        this.left = e.pageX;
+        this.visible = true;
+    },
+    // v-html渲染方法
     renderMessage: function(message) {
         message = String(message);
         let lookData = constant.expresionData;
@@ -531,7 +582,7 @@ export default {
         }, 1000);
         //socket关闭
         socket.onclose = function (event) {
-          console.log("WebSocket已关闭...");
+            clearInterval(self.uuid);
         };
       } else {
         self.$message({
@@ -559,7 +610,7 @@ export default {
        for (let i = 0; i < self.currentChatingList.length; i++) {
            if (fromUser.userId == self.currentChatingList[i].userId) {
               self.currentChatingList[i].messageTip = parmas.message;
-              if (self.chatCurrentObject.userId != toUser.userId) {
+              if (self.chatCurrentObject.userId != fromUser.userId) {
                   self.currentChatingList[i].unReadCount++;
               }
               exist = true;
@@ -612,19 +663,37 @@ export default {
             type: 2,
             image: jsonObj.params.fromUser.image,
             fileType: jsonObj.params.fileType,
+            showName: jsonObj.params.nameList.toString(),
         }
         if (jsonObj.params.fileType == "1") {
             parmas.fileName = jsonObj.params.message.split("(")[0];
         }
         let fromUser = jsonObj.params.fromUser;
         let groupId = jsonObj.params.groupId;
+        let exist = false;
         for (let i = 0; i < self.currentChatingList.length; i++) {
             if (groupId == self.currentChatingList[i].groupId) {
                 self.currentChatingList[i].messageTip = parmas.message;
                 if (self.chatCurrentObject.userId != groupId) {
                     self.currentChatingList[i].unReadCount++;
                 }
+                exist = true;
             }
+        }
+        if (!exist) {
+          //聊天列表不存在  就添加新记录   并且接收到一条消息那么未读提醒unReadCount开始就为0
+          let createParams = {
+            messageTip: parmas.message,
+            unReadCount: 1,
+            userId: groupId,
+            showName: parmas.showName,
+            image: 'group.jpg',
+            groupId: groupId,
+          };
+          if (self.currentChatingList.length > 0 && JSON.stringify(self.chatCurrentObject) != "{}") {
+              self.chatCurrentIndex++;
+          }
+          self.currentChatingList.unshift(JSON.parse(JSON.stringify(createParams)));
         }
         if (self.messageContentMapping[groupId] == undefined) {
             self.messageContentMapping[groupId] = [];
