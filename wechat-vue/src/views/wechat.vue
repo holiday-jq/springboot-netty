@@ -27,7 +27,8 @@
                            </div>
                            <!-- 鼠标右键弹出操作框 -->
                            <ul v-show="visible" :style="{left:left+'px',top:top+'px'}" class="contextmenu">
-                              <li>置顶聊天</li>  <!-- 暂未实现 -->
+                              <li v-if="rightHandItem.isTop == false" @click="topChat">置顶聊天</li>
+                              <li v-else-if="rightHandItem.isTop == true" @click="unTopChat">取消置顶</li>
                               <li>上移</li>   <!-- 暂未实现 -->
                               <li>下移</li>   <!-- 暂未实现 -->
                               <li @click="deleteOnline">删除聊天</li> 
@@ -144,7 +145,7 @@ export default {
       visible: false,
 			top: 0,
       left: 0,
-      rightHandItem: null,
+      rightHandItem: {},
     };
   },
   created() {
@@ -196,7 +197,7 @@ export default {
       } else {
         document.body.removeEventListener('click', this.closeMenu)
       }
-    }
+    },
   },
   computed: {
     ...mapState({
@@ -208,6 +209,54 @@ export default {
     },
   },
   methods: {
+    //聊天排序公用
+    charSortCommon: function(flag) {      
+        let sortFunction = function(a, b) {
+            return a.sortIndex - b.sortIndex;
+        }
+        let sortFunctionDesc = function(a, b) {
+            return b.sortIndex - a.sortIndex;
+        }
+        this.currentChatingList = this.currentChatingList.sort(flag ? sortFunction : sortFunctionDesc);
+    },
+    //取消置顶聊天
+    unTopChat: function() {
+        let self = this;
+        let offset = 0;
+        for (let i = 0; i < self.currentChatingList.length; i++) {
+             if (self.rightHandItem.userId == self.currentChatingList[i].userId) {
+                 self.currentChatingList[i].sortIndex = self.currentChatingList[i].oldIndex;
+                 self.currentChatingList[i].isTop = false;
+                 offset = i;
+             }
+        }
+        if (offset > self.chatCurrentIndex) {
+            self.chatCurrentIndex++;
+        } else if (offset == self.chatCurrentIndex) {
+            self.chatCurrentIndex = 0
+        } else {
+            self.chatCurrentIndex--;
+        }
+        self.charSortCommon(false);
+    },     
+    //置顶聊天
+    topChat: function() {
+        let self = this;
+        let offset = 0;
+        for (let i = 0; i < self.currentChatingList.length; i++) {
+             if (self.rightHandItem.userId == self.currentChatingList[i].userId) {
+                 self.currentChatingList[i].sortIndex = -1;
+                 self.currentChatingList[i].isTop = true;
+                 offset = i;
+             }
+        }
+        if (offset > self.chatCurrentIndex) {
+            self.chatCurrentIndex++;
+        } else if (offset == self.chatCurrentIndex) {
+            self.chatCurrentIndex = 0
+        }
+        self.charSortCommon(true);
+    },
     //右键选择删除聊天
     deleteOnline: function() {
         let self = this;
@@ -352,6 +401,9 @@ export default {
             let createParams = {
                 messageTip: "",
                 unReadCount: 0,
+                sortIndex: self.currentChatingList.length,
+                oldIndex: self.currentChatingList.length,
+                isTop: false,
             };
             $.extend(createParams, userList[0]);
             self.chatCurrentObject = createParams;
@@ -437,6 +489,9 @@ export default {
        let createParams = {
            messageTip: "",
            unReadCount: 0,
+           sortIndex: this.currentChatingList.length,
+           oldIndex: this.currentChatingList.length,
+           isTop: false,
        };
        $.extend(createParams, this.selectFriendInfo);
        this.chatCurrentObject = createParams;
@@ -621,6 +676,9 @@ export default {
           let createParams = {
             messageTip: parmas.message,
             unReadCount: 1,
+            sortIndex: self.currentChatingList.length,
+            oldIndex: self.currentChatingList.length,
+            isTop: false,
           };
           $.extend(createParams, fromUser);
           if (self.currentChatingList.length > 0 && JSON.stringify(self.chatCurrentObject) != "{}") {
@@ -648,6 +706,9 @@ export default {
            showName: jsonObj.nameList.toString(),
            image: 'group.jpg',
            groupId: jsonObj.groupId,
+           sortIndex: self.currentChatingList.length,
+           oldIndex: self.currentChatingList.length,
+           isTop: false,
         };
         if (self.currentChatingList.length > 0 && JSON.stringify(self.chatCurrentObject) != "{}") {
            self.chatCurrentIndex++;
@@ -689,6 +750,9 @@ export default {
             showName: parmas.showName,
             image: 'group.jpg',
             groupId: groupId,
+            sortIndex: self.currentChatingList.length,
+            oldIndex: self.currentChatingList.length,
+            isTop: false,
           };
           if (self.currentChatingList.length > 0 && JSON.stringify(self.chatCurrentObject) != "{}") {
               self.chatCurrentIndex++;
