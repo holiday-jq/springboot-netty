@@ -246,10 +246,36 @@ body {
                     }
                     .rightMargin-class2 {
                         margin-right: 10px;
+                        position: relative;
+                    }
+                    .rightMargin-class2::before{
+                        width: 0;
+                        height: 0;
+                        z-index: 99;
+                        content: "";
+                        border: 5px solid rgba(0,0,0,0);
+                        border-top-color: #98E165;
+                        border-left-color: #98E165;
+                        top: 15px;
+                        right: -8px;
+                        position: absolute;
                     }
                     .leftMargin-class2 {
                         margin-left: 10px;
                         background-color: #ffffff;
+                        position: relative;
+                    }
+                    .leftMargin-class2::before {
+                        width: 0;
+                        height: 0;
+                        z-index: 99;
+                        border: 5px solid rgba(0,0,0,0);
+                        border-top-color: #fff;
+                        border-right-color: #fff;
+                        top: 15px;
+                        left: -10px;
+                        content: "";
+                        position: absolute;
                     }
                 }
             }
