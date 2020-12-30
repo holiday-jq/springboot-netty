@@ -39,4 +39,19 @@ public class UserRespositoryDaoImpl implements UserRespositoryDao {
 		return resultList;
 	}
 
+	@Override
+	public User getByUsername(String userName) {
+		// TODO Auto-generated method stub
+		String sql  = "select * from t_user where userName = ?";
+		User user = new User();
+		try {
+			user = jdbcTemplate.queryForObject(sql, 
+					new UserRowMapper(), new Object[] {userName});
+		} catch (Exception ex) {
+			System.err.println(ex);
+			return null;
+		}
+		return user;
+	}
+
 }

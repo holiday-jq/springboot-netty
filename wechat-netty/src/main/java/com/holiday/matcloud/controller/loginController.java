@@ -16,7 +16,7 @@ public class loginController {
 	@Autowired
 	private loginService loginService;
 	
-     @PostMapping("/login")
+     @PostMapping("/login/getUser")
      public ResultDto login(@RequestBody User user) {
     	 User loginUser =  loginService.login(user);
          return ResultDto.ok(loginUser, "调用接口成功！");

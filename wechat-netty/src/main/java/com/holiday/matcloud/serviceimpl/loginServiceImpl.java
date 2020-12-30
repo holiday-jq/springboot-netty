@@ -16,7 +16,7 @@ public class loginServiceImpl implements loginService{
 	@Override
 	public User login(User user) {
 		// TODO Auto-generated method stub
-		return userRespositoryDao.getUserByUserName(user.getUserName(), user.getPassword());
+		return userRespositoryDao.getByUsername(user.getUserName());
 	}
 
 }

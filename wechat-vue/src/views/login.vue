@@ -38,18 +38,29 @@ export default {
         toLogin: function() {
             let me = this;
             let loginParam = {
-                userName: me.userName,
+                username: me.userName,
                 password: me.password,
+                grant_type: "password",
+                scope: "app",
+                client_id: "client",
+                client_secret: "secret"
             }
-            request.postJSON("/wechat/login", loginParam).then(function(res) {
-                console.log(res);
-                if (res.data.obj) {
-                   me.saveUserInfo(res.data.obj);
-                   let params = {
-                       userId: res.data.obj.userId
+            request.postUrlContentType("/oauth/token", loginParam).then(function(res) {
+                if (res.data) {
+                   //再去请求userId
+                   let userParams = {
+                        userName: me.userName,
                    }
-                   let encodeUrl = window.encodeURI(JSON.stringify(params));
-                   me.$router.push('/wechat?urlParams='+encodeUrl)
+                   let token = res.data.access_token;
+                   request.postJSON("/wechat/login/getUser", userParams, token).then(function(res) {
+                        me.saveUserInfo(res.data.obj);
+                        let params = {
+                            userId: res.data.obj.userId
+                        }
+                        localStorage.setItem("access_token_"+params.userId, token)
+                        let encodeUrl = window.encodeURI(JSON.stringify(params));
+                        me.$router.push('/wechat?urlParams='+encodeUrl)
+                   })
                 } else {
                     alert("登录失败，密码错误！")
                 }

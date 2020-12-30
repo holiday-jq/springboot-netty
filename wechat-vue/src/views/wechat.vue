@@ -146,11 +146,21 @@ export default {
 			top: 0,
       left: 0,
       rightHandItem: {},
+      //令牌 其实应该放vuex 然后用axios的拦截器统一为请求加上token  
+      //这里为了能在同一个浏览器打开多个聊天窗口 token通过参数传进 不然Localstore会覆盖  F5刷新界面就会有用户覆盖问题
+      token: "", 
     };
   },
   created() {
     let urlCacheParams = JSON.parse(this.urlParams);
     this.cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"+urlCacheParams.userId));
+    this.token = localStorage.getItem("access_token_"+urlCacheParams.userId);
+    //页面切换时清除localstore
+    window.addEventListener("beforeunload", function(e) {
+        e.preventDefault();
+        localStorage.removeItem("access_token_"+urlCacheParams.userId);
+        localStorage.removeItem("userInfo"+urlCacheParams.userId);
+    });
   },
   mounted() {
     let self = this;
@@ -321,7 +331,7 @@ export default {
         let params = {
             fileName:  fileName,
         }
-        request.postUrl("/wechat/download", params).then(function(res){
+        request.postUrl("/wechat/download", params, this.token).then(function(res){
             let url = window.URL.createObjectURL(new Blob([res.data]));
             let link = document.createElement('a');
             link.style.display = 'none';
@@ -340,7 +350,7 @@ export default {
         fd.append("file", file);
         let fileDom = document.getElementById('filebutton');
         fileDom.value = ''; //file的value值只能设置为空字符串
-        request.postFile("/wechat/upload", fd).then(function(res){
+        request.postFile("/wechat/upload", fd, self.token).then(function(res){
           if(res.data.obj) {
             let FileResultObj = res.data.obj;
             let parmas = {
@@ -574,7 +584,7 @@ export default {
         let params = {
            userId: self.userInfo.userId || cacheUserInfo.userId
         }
-        request.getJSON("/wechat/friendList", params).then(function(res){
+        request.getJSON("/wechat/friendList", params, self.token).then(function(res){
           self.friendList = res.data.obj;
           for (let i = 0; i < self.friendList.length; i++) {
             self.friendList[i].selected = false; // 供给弹出框chebox初始化选择

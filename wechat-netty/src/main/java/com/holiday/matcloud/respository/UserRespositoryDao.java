@@ -9,4 +9,6 @@ public interface UserRespositoryDao {
     User getUserByUserName(String userName, String password);
     
     List<User> getFriendListById(String userId);
+    
+    User getByUsername(String userName);
 }
