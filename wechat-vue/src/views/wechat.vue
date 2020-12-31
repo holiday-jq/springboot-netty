@@ -64,7 +64,7 @@
                                              <div class="fileName">{{item.message}}</div>
                                              <div class="download" @click="fileDownload(item.fileName)">下载</div>
                                      </div>
-                                     <div class="iconFile"></div>
+                                     <div class="iconFile" :class="fileClass(item.fileName)"></div>
                               </div>
                            </div>
                       </div>
@@ -155,12 +155,12 @@ export default {
     let urlCacheParams = JSON.parse(this.urlParams);
     this.cacheUserInfo = JSON.parse(localStorage.getItem("userInfo"+urlCacheParams.userId));
     this.token = localStorage.getItem("access_token_"+urlCacheParams.userId);
-    //页面切换时清除localstore
-    window.addEventListener("beforeunload", function(e) {
-        e.preventDefault();
-        localStorage.removeItem("access_token_"+urlCacheParams.userId);
-        localStorage.removeItem("userInfo"+urlCacheParams.userId);
-    });
+    // //页面切换时清除localstore
+    // window.addEventListener("beforeunload", function(e) {
+    //     e.preventDefault();
+    //     localStorage.removeItem("access_token_"+urlCacheParams.userId);
+    //     localStorage.removeItem("userInfo"+urlCacheParams.userId);
+    // });
   },
   mounted() {
     let self = this;
@@ -284,6 +284,38 @@ export default {
             self.chatCurrentIndex = null;
             self.chatCurrentObject = {};
         }
+    },
+    fileClass: function(fileName) {
+        let suffix = fileName.split(".")[1];
+        let className = "";
+        switch(suffix) {
+             case "txt":
+                className = "icon-txt";
+             break;
+             case "word":
+                className = "icon-word";
+             break;
+             case "xlsx":
+                className = "icon-excel";
+             break;
+             case "pdf":
+                className = "icon-pdf";
+             break;
+             case "pptx":
+                className = "icon-ppt";
+             break;
+             default:
+               break;
+        }
+        this.$nextTick(function(){
+            let messageItemDom = $(".message-item");
+            for (let j = 0; j < messageItemDom.length; j++) {
+                 let temp = $(messageItemDom[j]);
+                 let childrenHeight = temp.children(".messageInfo").height() + 30;
+                 temp.css("height", childrenHeight + 'px');
+            }
+        })
+        return className;
     },
     closeMenu: function() {
         this.visible = false;
@@ -589,6 +621,14 @@ export default {
           for (let i = 0; i < self.friendList.length; i++) {
             self.friendList[i].selected = false; // 供给弹出框chebox初始化选择
           }
+        }).catch(function(error){
+            if (error.response.data.error == "invalid_token") {
+                self.$message({
+                  message: 'token失效请重新登录！',
+                  type: 'warning'
+                });
+                 self.$router.push('/')
+            }
         })
     },
     getSocket: function () {

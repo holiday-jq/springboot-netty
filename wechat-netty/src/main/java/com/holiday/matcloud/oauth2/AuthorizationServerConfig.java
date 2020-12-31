@@ -30,12 +30,12 @@ import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter implements EnvironmentAware{
 
 	@Autowired
-	AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
 	
 	private Environment env;
 
 	@Bean
-	PasswordEncoder passwordEncoder() {
+	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
