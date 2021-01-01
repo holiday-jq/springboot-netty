@@ -372,6 +372,14 @@ export default {
             link.setAttribute('download', res.config.params.fileName);
             document.body.appendChild(link);
             link.click();
+        }).catch(function(error){
+            if (error.response.data.error == "invalid_token") {
+                self.$message({
+                  message: 'token失效请重新登录！',
+                  type: 'warning'
+                });
+                 self.$router.push('/')
+            }
         })
     },
     fileSelected: function() {
@@ -411,6 +419,14 @@ export default {
                 });
             }            
           }
+        }).catch(function(error){
+            if (error.response.data.error == "invalid_token") {
+                self.$message({
+                  message: 'token失效请重新登录！',
+                  type: 'warning'
+                });
+                 self.$router.push('/')
+            }
         })
     },
     uploadClick: function() {
