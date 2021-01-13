@@ -17,3 +17,5 @@
 
 后端：
 安装好maven，并在开发编辑器（如eclipse）中配置好maven，然后启动springboot工程
+
+项目详情：https://blog.csdn.net/qq_38355969/article/details/112099760
